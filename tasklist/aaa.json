@@ -1,0 +1,1 @@
+{"Url": "WebLoginCheck/Test/Test.ashx", "Action": "Get", "IntervalTime": 300, "Parameter": [{"Column": "key1", "Value": "admin"}, {"Column": "key2", "Value": 1}]}
