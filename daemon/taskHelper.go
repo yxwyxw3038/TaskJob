@@ -6,12 +6,12 @@ import (
 	"TaskJob/util"
 	"encoding/json"
 	"errors"
-	"time"
-
 	"github.com/kirinlabs/HttpRequest"
+	"strconv"
+	"time"
 )
 
-func TaskRun(info model.RequestInfoModel) {
+func TaskRun(info model.RequestInfoModel, runCount int) {
 	var err error
 	logger := util.InitZapLog()
 	defer func() {
@@ -35,7 +35,17 @@ func TaskRun(info model.RequestInfoModel) {
 		for i := 0; i < len(info.Parameter); i++ {
 			hasmap[info.Parameter[i].Column] = info.Parameter[i].Value
 		}
+		parameterB, err := json.Marshal(info.Parameter)
+		if err != nil {
+			logger.Error(err.Error())
+			return
+		}
+		parameterS := string(parameterB)
+		logger.Info("Count：" + strconv.Itoa(runCount) + " " + info.Url + " " + info.Action + " 请求参数:" + parameterS)
+	} else {
+		logger.Info("Count：" + strconv.Itoa(runCount) + " " + info.Url + " " + info.Action + " 请求参数:" + "null")
 	}
+
 	var res *HttpRequest.Response
 	switch info.Action {
 	case "Post":
@@ -61,9 +71,10 @@ func TaskRun(info model.RequestInfoModel) {
 	var publicResult model.PublicResult
 	err = json.Unmarshal([]byte(tempJson), &publicResult)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("Count：" + strconv.Itoa(runCount) + " " + info.Url + " " + info.Action + " 返回结果:" + err.Error())
 		return
 	}
+	logger.Info("Count：" + strconv.Itoa(runCount) + " " + info.Url + " " + info.Action + " 返回结果:" + tempJson)
 	if publicResult.Code == "1" {
 		if publicResult.Data != nil && publicResult.Data != "" {
 			nextInfo, err := toRunInfo(publicResult.Data)
@@ -78,7 +89,7 @@ func TaskRun(info model.RequestInfoModel) {
 					if model.IntervalTime > 0 {
 						time.Sleep(time.Second * time.Duration(model.IntervalTime))
 					}
-					TaskRun(model)
+					TaskRun(model, runCount)
 				}
 			}
 		}

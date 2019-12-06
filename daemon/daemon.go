@@ -82,12 +82,14 @@ func registerTask(taskfileName string, intervalTime int32) {
 		logger.Error(err.Error())
 		return
 	}
-
+	count := 0
 	for {
+		if count >= 999999 {
+			count = 0
+		}
+		count++
 		logger.Sync()
-		logger.Debug(info.Url)
-		logger.Debug(info.Action)
-		TaskRun(info)
+		TaskRun(info, count)
 		time.Sleep(time.Second * time.Duration(info.IntervalTime))
 		// logger.Debug(msg)
 		// time.Sleep(time.Second * time.Duration(30))
