@@ -11,7 +11,7 @@ import (
 )
 
 type DataSyncMutex struct {
-	mutex  sync.RWMutex
+	mutex  sync.Mutex
 	isSync bool
 }
 
@@ -49,8 +49,9 @@ func Run() {
 	// time.Sleep(time.Second * time.Duration(intervalTime))
 	for i := 0; i < len(date); i++ {
 		msg := date[i]
-		time.Sleep(time.Second * time.Duration(intervalTime))
+
 		wait.Wrap(func() { registerTask(msg, intervalTime) })
+		time.Sleep(time.Second * time.Duration(intervalTime))
 	}
 	wait.Wait()
 }
@@ -89,7 +90,8 @@ func registerTask(taskfileName string, intervalTime int32) {
 		}
 		count++
 		logger.Sync()
-		TaskRun(info, count)
+		dataSync := new(DataSyncMutex)
+		TaskRun(info, count, dataSync)
 		time.Sleep(time.Second * time.Duration(info.IntervalTime))
 		// logger.Debug(msg)
 		// time.Sleep(time.Second * time.Duration(30))

@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func TaskRun(info model.RequestInfoModel, runCount int) {
+func TaskRun(info model.RequestInfoModel, runCount int, dataSync *DataSyncMutex) {
 	var err error
 	logger := util.InitZapLog()
 	defer func() {
@@ -45,7 +45,7 @@ func TaskRun(info model.RequestInfoModel, runCount int) {
 	} else {
 		logger.Info("Count：" + strconv.Itoa(runCount) + " " + info.Url + " " + info.Action + " 请求参数:" + "null")
 	}
-
+	(*dataSync).mutex.Lock()
 	var res *HttpRequest.Response
 	switch info.Action {
 	case "Post":
@@ -58,6 +58,7 @@ func TaskRun(info model.RequestInfoModel, runCount int) {
 		logger.Error("请求类型异常")
 		return
 	}
+	(*dataSync).mutex.Unlock()
 	if err != nil {
 		logger.Error(err.Error())
 		return
@@ -89,7 +90,7 @@ func TaskRun(info model.RequestInfoModel, runCount int) {
 					if model.IntervalTime > 0 {
 						time.Sleep(time.Second * time.Duration(model.IntervalTime))
 					}
-					TaskRun(model, runCount)
+					go TaskRun(model, runCount, dataSync)
 				}
 			}
 		}
