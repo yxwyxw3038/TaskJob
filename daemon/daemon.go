@@ -34,6 +34,7 @@ func Run() {
 
 	logger.Debug("启动后台进程")
 	intervalTime := setting.AppSetting.IntervalTime
+	jumpTime := setting.AppSetting.JumpTime
 	taskList := setting.AppSetting.TaskList
 	if taskList == "" {
 		logger.Error("启动任务列表为空!")
@@ -51,7 +52,7 @@ func Run() {
 		msg := date[i]
 
 		wait.Wrap(func() { registerTask(msg, intervalTime) })
-		time.Sleep(time.Second * time.Duration(intervalTime))
+		time.Sleep(time.Second * time.Duration(jumpTime))
 	}
 	wait.Wait()
 }
